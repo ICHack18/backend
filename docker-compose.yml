@@ -18,6 +18,7 @@ services:
       context: .
       dockerfile: Dockerfile
     working_dir: /go/src
+    env_file: .node1.env
     expose:
       - "2048"
     volumes:
@@ -30,6 +31,7 @@ services:
       context: .
       dockerfile: Dockerfile
     working_dir: /go/src
+    env_file: .node2.env
     expose:
       - "2048"
     volumes:
@@ -42,6 +44,7 @@ services:
       context: .
       dockerfile: Dockerfile
     working_dir: /go/src
+    env_file: .node3.env
     expose:
       - "2048"
     volumes:
@@ -54,6 +57,7 @@ services:
       context: .
       dockerfile: Dockerfile
     working_dir: /go/src
+    env_file: .node4.env
     expose:
       - "2048"
     volumes:

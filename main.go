@@ -16,10 +16,9 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const (
-	key      = "3c9bda420b1f4c7d81ee65210b55fe11"
-	endpoint = "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=categories,description&language=en"
-)
+var key = os.Getenv("VISION_KEY")
+
+const endpoint = "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=categories,description&language=en"
 
 func main() {
 	client := redis.NewClient(&redis.Options{
