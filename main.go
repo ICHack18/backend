@@ -81,7 +81,7 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 
 	for index, url := range req.Urls {
 		var cvResponse CVResponse
-		var fetchNew = true;
+		var fetchNew = true
 
 		if req.UseCache {
 			val, err := client.Get(url).Result()
