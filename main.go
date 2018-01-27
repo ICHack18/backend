@@ -81,17 +81,21 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 
 	for index, url := range req.Urls {
 		var cvResponse CVResponse
+		var fetchNew = true;
 
-		if req.Cache {
+		if req.UseCache {
 			val, err := client.Get(url).Result()
 			if err == nil {
+				fetchNew = false;
 				marshalErr := json.Unmarshal([]byte(val), &cvResponse)
 				if marshalErr != nil {
 					http.Error(w, marshalErr.Error(), 500)
 					return
 				}
 			}
-		} else {
+		}
+
+		if fetchNew {
 			cvResponse = getDescriptionFromCognitiveServices(url)
 			responseJson, err := json.Marshal(cvResponse)
 			if err == nil {
