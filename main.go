@@ -1,10 +1,11 @@
 package main
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -27,8 +28,10 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", apiHealthHandler)
 	r.HandleFunc("/hide", redisHandler(client, hideHandler)).Methods("POST")
+	r.HandleFunc("/call-ms/", msHandler)
 
 	http.Handle("/", r)
+	http.Handle("/call-ms/", r)
 
 	log.Fatal(http.ListenAndServe(":2048", nil))
 }
@@ -73,4 +76,34 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println("Checking cache")
+}
+
+type Category struct {
+	Name string
+	Score float64
+}
+type MSResponse struct {
+	Categories  []Category
+}
+
+func msHandler(w http.ResponseWriter, r *http.Request) {
+	var key = "3c9bda420b1f4c7d81ee65210b55fe11"
+	var endpoint = "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/analyze?language=en"
+	var jsonStr = []byte(`{"url":"http://media-cache-ak0.pinimg.com/736x/df/27/97/df2797e109dd77a99945d16fccb3777b.jpg"}`)
+	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(jsonStr))
+	req.Header.Set("Ocp-Apim-Subscription-Key", key)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	var response MSResponse
+	json.NewDecoder(resp.Body).Decode(&response)
+	fmt.Println(response)
+
+	fmt.Fprintf(w, response.Categories[0].Name)
 }
