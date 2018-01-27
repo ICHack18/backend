@@ -75,11 +75,48 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !req.Cache {
-		fmt.Println("Fresh request")
+	response := &Response{
+		Images: make([]ImageResponse, len(req.Urls)),
 	}
 
-	fmt.Println("Checking cache")
+	for index, url := range req.Urls {
+		var cvResponse *CVResponse
+
+		if req.Cache {
+			fmt.Println("Fresh request")
+			val, err := client.Get(url).Result()
+			if err == nil {
+				marshalErr := json.Unmarshal([]byte(val), cvResponse)
+				if marshalErr != nil {
+					http.Error(w, marshalErr.Error(), 500)
+					return
+				}
+			}
+		} else {
+			cvResponse = getDescriptionFromCognitiveServices(url)
+			responseJson, err := json.Marshal(cvResponse)
+			if err == nil {
+				client.Set(url, responseJson, 0).Err()
+			}
+		}
+
+		fmt.Println("Checking cache")
+		imageResponse := ImageResponse{
+			Url:             url,
+			Hide:            shouldBlockImage(req.Tags, cvResponse),
+			SubstituteImage: url,
+		}
+
+		response.Images[index] = imageResponse
+	}
+
+	responseJson, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+	}
+
+	w.Header().Set("content-type", "application/json")
+	w.Write(responseJson)
 }
 
 func cvHandler(w http.ResponseWriter, r *http.Request) {
@@ -91,7 +128,10 @@ func cvHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getDescriptionFromCognitiveServices(url string) *CVResponse {
-	var msReq = CVRequest{url}
+	var msReq = &CVRequest{
+		url,
+	}
+
 	postData, err := json.Marshal(msReq)
 	if err != nil {
 		panic(err)
@@ -102,14 +142,17 @@ func getDescriptionFromCognitiveServices(url string) *CVResponse {
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		panic(err)
 	}
+
 	defer resp.Body.Close()
 
 	var response CVResponse
 	json.NewDecoder(resp.Body).Decode(&response)
+
 	return &response
 }
 
