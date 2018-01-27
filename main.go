@@ -78,22 +78,12 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Checking cache")
 }
 
-type Category struct {
-	Name string
-	Score float64
-}
-type MSResponse struct {
-	Categories  []Category
-}
 
 func msHandler(w http.ResponseWriter, r *http.Request) {
 	response := getDescriptionFromCognitiveServices("http://media-cache-ak0.pinimg.com/736x/df/27/97/df2797e109dd77a99945d16fccb3777b.jpg")
 	fmt.Fprintf(w, response.Categories[0].Name)
 }
 
-type MSRequest struct {
-	Url string
-}
 
 func getDescriptionFromCognitiveServices(url string) *MSResponse {
 	var key = "3c9bda420b1f4c7d81ee65210b55fe11"

@@ -16,3 +16,15 @@ type Request struct {
 	ImageURL string   `json:"imageURL"`
 	Image    []byte   `json:"image"`
 }
+
+type Category struct {
+	Name string     `json:"name"`
+	Score float64   `json:"score"`
+}
+type MSResponse struct {
+	Categories  []Category  `json:"categories"`
+}
+
+type MSRequest struct {
+	Url string  `json:"url"`
+}
