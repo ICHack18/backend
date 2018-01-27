@@ -112,3 +112,19 @@ func getDescriptionFromCognitiveServices(url string) *CVResponse {
 	json.NewDecoder(resp.Body).Decode(&response)
 	return &response
 }
+
+func shouldBlockImage(blockTags []string, cvResponse *CVResponse) bool {
+	imageTags := cvResponse.Description.Tags
+	set := make(map[string]bool)
+	for _, imageTag := range imageTags {
+		set[imageTag] = true
+	}
+
+	for _, blockTag := range blockTags {
+		_, tagInImage := set[blockTag]
+		if tagInImage {
+			return true
+		}
+	}
+	return false
+}
