@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  safespace:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /go/src
+    ports:
+      - "2048:2048"
+    volumes:
+      - .:/go/src
+    links:
+      - redis
+
+  redis:
+    image: redis:alpine
