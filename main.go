@@ -80,13 +80,12 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 	}
 
 	for index, url := range req.Urls {
-		var cvResponse *CVResponse
+		var cvResponse CVResponse
 
 		if req.Cache {
-			fmt.Println("Fresh request")
 			val, err := client.Get(url).Result()
 			if err == nil {
-				marshalErr := json.Unmarshal([]byte(val), cvResponse)
+				marshalErr := json.Unmarshal([]byte(val), &cvResponse)
 				if marshalErr != nil {
 					http.Error(w, marshalErr.Error(), 500)
 					return
@@ -100,7 +99,6 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		fmt.Println("Checking cache")
 		imageResponse := ImageResponse{
 			Url:             url,
 			Hide:            shouldBlockImage(req.Tags, cvResponse),
@@ -127,7 +125,7 @@ func cvHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(responseJson)
 }
 
-func getDescriptionFromCognitiveServices(url string) *CVResponse {
+func getDescriptionFromCognitiveServices(url string) CVResponse {
 	var msReq = &CVRequest{
 		url,
 	}
@@ -153,10 +151,10 @@ func getDescriptionFromCognitiveServices(url string) *CVResponse {
 	var response CVResponse
 	json.NewDecoder(resp.Body).Decode(&response)
 
-	return &response
+	return response
 }
 
-func shouldBlockImage(blockTags []string, cvResponse *CVResponse) bool {
+func shouldBlockImage(blockTags []string, cvResponse CVResponse) bool {
 	imageTags := cvResponse.Description.Tags
 	set := make(map[string]bool)
 	for _, imageTag := range imageTags {
