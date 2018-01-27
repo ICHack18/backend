@@ -28,7 +28,7 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", apiHealthHandler)
 	r.HandleFunc("/hide", redisHandler(client, hideHandler)).Methods("POST")
-	r.HandleFunc("/call-ms/", msHandler)
+	r.HandleFunc("/call-ms-cv/", cvHandler)
 
 	http.Handle("/", r)
 
@@ -78,8 +78,9 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 }
 
 
-func msHandler(w http.ResponseWriter, r *http.Request) {
-	response := getDescriptionFromCognitiveServices("http://media-cache-ak0.pinimg.com/736x/df/27/97/df2797e109dd77a99945d16fccb3777b.jpg")
+func cvHandler(w http.ResponseWriter, r *http.Request) {
+	url := r.URL.Query().Get("url")
+	response := getDescriptionFromCognitiveServices(url)
 	responseJson, _ := json.Marshal(response)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(responseJson)
