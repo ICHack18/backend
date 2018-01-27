@@ -16,7 +16,7 @@ type Response struct {
 }
 
 type Request struct {
-	UseCache bool  `json:"use-cache"`
+	UseCache bool  `json:"useCache"`
 	Tags  []string `json:"tags"`
 	Urls  []string `json:"urls"`
 }
