@@ -87,10 +87,24 @@ type MSResponse struct {
 }
 
 func msHandler(w http.ResponseWriter, r *http.Request) {
+	response := getDescriptionFromCognitiveServices("http://media-cache-ak0.pinimg.com/736x/df/27/97/df2797e109dd77a99945d16fccb3777b.jpg")
+	fmt.Fprintf(w, response.Categories[0].Name)
+}
+
+type MSRequest struct {
+	Url string
+}
+
+func getDescriptionFromCognitiveServices(url string) *MSResponse {
 	var key = "3c9bda420b1f4c7d81ee65210b55fe11"
 	var endpoint = "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/analyze?language=en"
-	var jsonStr = []byte(`{"url":"http://media-cache-ak0.pinimg.com/736x/df/27/97/df2797e109dd77a99945d16fccb3777b.jpg"}`)
-	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(jsonStr))
+	var msReq = MSRequest{url}
+	postData, err := json.Marshal(msReq)
+	if err != nil {
+		panic(err)
+	}
+
+	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(postData))
 	req.Header.Set("Ocp-Apim-Subscription-Key", key)
 	req.Header.Set("Content-Type", "application/json")
 
@@ -103,7 +117,5 @@ func msHandler(w http.ResponseWriter, r *http.Request) {
 
 	var response MSResponse
 	json.NewDecoder(resp.Body).Decode(&response)
-	fmt.Println(response)
-
-	fmt.Fprintf(w, response.Categories[0].Name)
+	return &response
 }
