@@ -1,10 +1,11 @@
 package main
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -27,6 +28,7 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", apiHealthHandler)
 	r.HandleFunc("/hide", redisHandler(client, hideHandler)).Methods("POST")
+	r.HandleFunc("/call-ms-cv/", cvHandler)
 
 	http.Handle("/", r)
 
@@ -73,4 +75,39 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println("Checking cache")
+}
+
+
+func cvHandler(w http.ResponseWriter, r *http.Request) {
+	url := r.URL.Query().Get("url")
+	response := getDescriptionFromCognitiveServices(url)
+	responseJson, _ := json.Marshal(response)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseJson)
+}
+
+
+func getDescriptionFromCognitiveServices(url string) *CVResponse {
+	var key = "3c9bda420b1f4c7d81ee65210b55fe11"
+	var endpoint = "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=categories,description&language=en"
+	var msReq = CVRequest{url}
+	postData, err := json.Marshal(msReq)
+	if err != nil {
+		panic(err)
+	}
+
+	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(postData))
+	req.Header.Set("Ocp-Apim-Subscription-Key", key)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	var response CVResponse
+	json.NewDecoder(resp.Body).Decode(&response)
+	return &response
 }

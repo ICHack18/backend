@@ -16,3 +16,4 @@ type Request struct {
 	ImageURL string   `json:"imageURL"`
 	Image    []byte   `json:"image"`
 }
+
