@@ -81,14 +81,15 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 
 func msHandler(w http.ResponseWriter, r *http.Request) {
 	response := getDescriptionFromCognitiveServices("http://media-cache-ak0.pinimg.com/736x/df/27/97/df2797e109dd77a99945d16fccb3777b.jpg")
+	fmt.Println(response)
 	fmt.Fprintf(w, response.Categories[0].Name)
 }
 
 
-func getDescriptionFromCognitiveServices(url string) *MSResponse {
+func getDescriptionFromCognitiveServices(url string) *CVResponse {
 	var key = "3c9bda420b1f4c7d81ee65210b55fe11"
-	var endpoint = "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/analyze?language=en"
-	var msReq = MSRequest{url}
+	var endpoint = "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=categories,description&language=en"
+	var msReq = CVRequest{url}
 	postData, err := json.Marshal(msReq)
 	if err != nil {
 		panic(err)
@@ -105,7 +106,7 @@ func getDescriptionFromCognitiveServices(url string) *MSResponse {
 	}
 	defer resp.Body.Close()
 
-	var response MSResponse
+	var response CVResponse
 	json.NewDecoder(resp.Body).Decode(&response)
 	return &response
 }
