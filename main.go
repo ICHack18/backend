@@ -31,7 +31,6 @@ func main() {
 	r.HandleFunc("/call-ms/", msHandler)
 
 	http.Handle("/", r)
-	http.Handle("/call-ms/", r)
 
 	log.Fatal(http.ListenAndServe(":2048", nil))
 }
@@ -81,8 +80,9 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 
 func msHandler(w http.ResponseWriter, r *http.Request) {
 	response := getDescriptionFromCognitiveServices("http://media-cache-ak0.pinimg.com/736x/df/27/97/df2797e109dd77a99945d16fccb3777b.jpg")
-	fmt.Println(response)
-	fmt.Fprintf(w, response.Categories[0].Name)
+	responseJson, _ := json.Marshal(response)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseJson)
 }
 
 
