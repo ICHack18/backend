@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -162,11 +163,11 @@ func shouldBlockImage(blockTags []string, cvResponse CVResponse) bool {
 	imageTags := cvResponse.Description.Tags
 	set := make(map[string]bool)
 	for _, imageTag := range imageTags {
-		set[imageTag] = true
+		set[strings.ToLower(imageTag)] = true
 	}
 
 	for _, blockTag := range blockTags {
-		_, tagInImage := set[blockTag]
+		_, tagInImage := set[strings.ToLower(blockTag)]
 		if tagInImage {
 			return true
 		}
