@@ -5,16 +5,20 @@ type HealthResponse struct {
 	Timestamp int64  `json:"timestamp"`
 }
 
-type Response struct {
+type ImageResponse struct {
+	Url             string `json:"url"`
 	Hide            bool   `json:"hide"`
 	SubstituteImage string `json:"substituteImage"`
 }
 
+type Response struct {
+	Images []ImageResponse `json:"images"`
+}
+
 type Request struct {
-	Cache    bool     `json:"cache"`
-	Tags     []string `json:"tags"`
-	ImageURL string   `json:"imageURL"`
-	Image    []byte   `json:"image"`
+	Cache bool     `json:"cache"`
+	Tags  []string `json:"tags"`
+	Urls  []string `json:"urls"`
 }
 
 type CVCategory struct {
