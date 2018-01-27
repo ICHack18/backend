@@ -15,7 +15,10 @@ import (
 
 const (
 	key      = "3c9bda420b1f4c7d81ee65210b55fe11"
+	fvkey = ""
 	endpoint = "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=categories,description&language=en"
+	fvendpoint = "https://westcentralus.api.cognitive.microsoft.com/face/v1.0"
+	persongid = "banned_users"
 )
 
 func main() {
@@ -172,4 +175,163 @@ func shouldBlockImage(blockTags []string, cvResponse CVResponse) bool {
 		}
 	}
 	return false
+}
+
+func getFaceVerification(url string) *FVResponse {
+	var msReq = FVRequest{}
+
+	postData, err := json.Marshal(msReq)
+	if err != nil {
+		panic(err)
+	}
+
+	req, err := http.NewRequest("POST", fvendpoint, bytes.NewReader(postData))
+	req.Header.Set("Ocp-Apim-Subscription-Key", fvkey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	var response FVResponse
+	json.NewDecoder(resp.Body).Decode(&response)
+	return &response
+}
+
+type NPGRequest struct {
+	Name string
+	userData string
+}
+
+func createPersonGroup(name string, info string) bool {
+	var endpoint = fvendpoint + "/persongroups/" + persongid
+
+	//var msReq = NPGRequest{username, data}
+	var msReq = NPGRequest{name, info}
+
+	postData, err := json.Marshal(msReq)
+	if err != nil {
+		panic(err)
+	}
+
+	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(postData))
+	req.Header.Set("Ocp-Apim-Subscription-Key", fvkey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	if len(body) != 0 {
+		log.Fatal("response was not 200!")
+	}
+	return true
+}
+
+type PGRequest struct {
+	Username string
+	UserData string
+}
+
+type Person struct {
+	PersonId string
+}
+
+func createPerson(username string, userinfo string) *Person {
+	var endpoint = fvendpoint + "/persongroups/" + persongid + "/persons"
+
+	var msReq = PGRequest{username, userinfo}
+
+	postData, err := json.Marshal(msReq)
+	if err != nil {
+		panic(err)
+	}
+
+	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(postData))
+	req.Header.Set("Ocp-Apim-Subscription-Key", fvkey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	var person Person
+	json.NewDecoder(resp.Body).Decode(&person)
+	return &person
+}
+
+
+type NewFaceRequest struct {
+	Url string
+}
+
+type NewFaceResponse struct {
+	PersistedFaceId string
+}
+
+
+func addPersonFace(personid string, url string) *NewFaceResponse {
+	var endpoint = fvendpoint + "/persongroups/" + persongid + "/persons/" + personid + "/persistedFaces"
+
+	var msReq = NewFaceRequest{url}
+
+	postData, err := json.Marshal(msReq)
+	if err != nil {
+		panic(err)
+	}
+
+	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(postData))
+	req.Header.Set("Ocp-Apim-Subscription-Key", fvkey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	var face NewFaceResponse
+	json.NewDecoder(resp.Body).Decode(&face)
+	return &face
+}
+
+
+func trainPersonGroup() bool {
+	var endpoint = fvendpoint + "/persongroups/" + persongid + "/train"
+
+	req, err := http.NewRequest("POST", endpoint, nil)
+	req.Header.Set("Ocp-Apim-Subscription-Key", fvkey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	if len(body) != 0 {
+		log.Fatal("response was not 200!")
+	}
+	return true
 }

@@ -43,3 +43,22 @@ type CVResponse struct {
 type CVRequest struct {
 	Url string `json:"url"`
 }
+
+type FVRequest struct {
+	FaceIds []string
+	PersonGroupId string
+}
+
+type Candidates struct {
+	PersonId string
+	Confidence float64
+}
+
+type FacesId struct {
+	FaceId string
+	Candidates []Candidates
+}
+
+type FVResponse struct {
+	Results []FacesId
+}
