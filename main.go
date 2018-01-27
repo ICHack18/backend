@@ -7,20 +7,23 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/go-redis/redis"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
 const (
-	key      = "3c9bda420b1f4c7d81ee65210b55fe11"
-	fvkey = ""
 	endpoint = "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=categories,description&language=en"
 	fvendpoint = "https://westcentralus.api.cognitive.microsoft.com/face/v1.0"
 	persongid = "banned_users"
 )
+var key = os.Getenv("VISION_KEY")
+var fvkey = os.Getenv("FACE_VISION_KEY")
+
 
 func main() {
 	client := redis.NewClient(&redis.Options{
@@ -39,9 +42,9 @@ func main() {
 	r.HandleFunc("/hide", redisHandler(client, hideHandler)).Methods("POST")
 	r.HandleFunc("/call-ms-cv/", cvHandler)
 
-	http.Handle("/", r)
+	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
 
-	log.Fatal(http.ListenAndServe(":2048", nil))
+	log.Fatal(http.ListenAndServe(":2048", loggedRouter))
 }
 
 func apiHealthHandler(w http.ResponseWriter, r *http.Request) {
@@ -90,7 +93,7 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 		if req.UseCache {
 			val, err := client.Get(url).Result()
 			if err == nil {
-				fetchNew = false;
+				fetchNew = false
 				marshalErr := json.Unmarshal([]byte(val), &cvResponse)
 				if marshalErr != nil {
 					http.Error(w, marshalErr.Error(), 500)
