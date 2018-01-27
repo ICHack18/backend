@@ -103,7 +103,7 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 		}
 
 		if fetchNew {
-			cvResponse = getDescriptionFromCognitiveServices(url)
+			cvResponse = getDescriptionFromCognitiveServices(url, w)
 			responseJson, err := json.Marshal(cvResponse)
 			if err == nil {
 				client.Set(url, responseJson, 0).Err()
@@ -130,13 +130,13 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 
 func cvHandler(w http.ResponseWriter, r *http.Request) {
 	url := r.URL.Query().Get("url")
-	response := getDescriptionFromCognitiveServices(url)
+	response := getDescriptionFromCognitiveServices(url, w)
 	responseJson, _ := json.Marshal(response)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(responseJson)
 }
 
-func getDescriptionFromCognitiveServices(url string) CVResponse {
+func getDescriptionFromCognitiveServices(url string, w http.ResponseWriter) CVResponse {
 	var msReq = &CVRequest{
 		url,
 	}
@@ -152,11 +152,19 @@ func getDescriptionFromCognitiveServices(url string) CVResponse {
 
 	client := &http.Client{}
 
+	var backoffTimeout = 0.5
 	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
+	for {
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Duration(backoffTimeout) * time.Second)
+		resp, err = client.Do(req)
+		backoffTimeout *= 2
+		if backoffTimeout == 8 {
+			http.Error(w, err.Error(), 429)
+		}
 	}
-
 	defer resp.Body.Close()
 
 	var response CVResponse
