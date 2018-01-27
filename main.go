@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -103,7 +104,11 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 		}
 
 		if fetchNew {
-			cvResponse = getDescriptionFromCognitiveServices(url, w)
+			cvResponse, err = getDescriptionFromCognitiveServices(url)
+			if err != nil {
+				http.Error(w, err.Error(), 429)
+				return
+			}
 			responseJson, err := json.Marshal(cvResponse)
 			if err == nil {
 				client.Set(url, responseJson, 0).Err()
@@ -130,13 +135,17 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 
 func cvHandler(w http.ResponseWriter, r *http.Request) {
 	url := r.URL.Query().Get("url")
-	response := getDescriptionFromCognitiveServices(url, w)
+	response, err := getDescriptionFromCognitiveServices(url)
+	if err != nil {
+		http.Error(w, err.Error(), 429)
+		return
+	}
 	responseJson, _ := json.Marshal(response)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(responseJson)
 }
 
-func getDescriptionFromCognitiveServices(url string, w http.ResponseWriter) CVResponse {
+func getDescriptionFromCognitiveServices(url string) (cvr CVResponse, err error) {
 	var msReq = &CVRequest{
 		url,
 	}
@@ -162,15 +171,15 @@ func getDescriptionFromCognitiveServices(url string, w http.ResponseWriter) CVRe
 		resp, err = client.Do(req)
 		backoffTimeout *= 2
 		if backoffTimeout == 8 {
-			http.Error(w, err.Error(), 429)
+			err = errors.New("API Timeout")
+			return
 		}
 	}
 	defer resp.Body.Close()
 
-	var response CVResponse
-	json.NewDecoder(resp.Body).Decode(&response)
+	json.NewDecoder(resp.Body).Decode(&cvr)
 
-	return response
+	return
 }
 
 // TODO: add face rec to this
