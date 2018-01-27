@@ -7,10 +7,12 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/go-redis/redis"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -36,9 +38,9 @@ func main() {
 	r.HandleFunc("/hide", redisHandler(client, hideHandler)).Methods("POST")
 	r.HandleFunc("/call-ms-cv/", cvHandler)
 
-	http.Handle("/", r)
+	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
 
-	log.Fatal(http.ListenAndServe(":2048", nil))
+	log.Fatal(http.ListenAndServe(":2048", loggedRouter))
 }
 
 func apiHealthHandler(w http.ResponseWriter, r *http.Request) {
@@ -87,7 +89,7 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 		if req.UseCache {
 			val, err := client.Get(url).Result()
 			if err == nil {
-				fetchNew = false;
+				fetchNew = false
 				marshalErr := json.Unmarshal([]byte(val), &cvResponse)
 				if marshalErr != nil {
 					http.Error(w, marshalErr.Error(), 500)
