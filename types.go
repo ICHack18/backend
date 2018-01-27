@@ -62,3 +62,37 @@ type FacesId struct {
 type FVResponse struct {
 	Results []FacesId
 }
+
+type NewPGRequest struct {
+	Name string
+	userData string
+}
+
+type PGRequest struct {
+	Username string
+	UserData string
+}
+
+type Person struct {
+	PersonId string
+}
+
+type NewFaceRequest struct {
+	Url string
+}
+
+type NewFaceResponse struct {
+	PersistedFaceId string
+}
+
+type FaceRect struct {
+	Width int
+	Height int
+	Left int
+	Top int
+}
+
+type Faces struct {
+	FaceId string
+	FaceRect FaceRect
+}

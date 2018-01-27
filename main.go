@@ -162,6 +162,7 @@ func getDescriptionFromCognitiveServices(url string) CVResponse {
 	return response
 }
 
+// TODO: add face rec to this
 func shouldBlockImage(blockTags []string, cvResponse CVResponse) bool {
 	imageTags := cvResponse.Description.Tags
 	set := make(map[string]bool)
@@ -178,8 +179,8 @@ func shouldBlockImage(blockTags []string, cvResponse CVResponse) bool {
 	return false
 }
 
-func getFaceVerification(url string) *FVResponse {
-	var msReq = FVRequest{}
+func getFaceVerification(url string, faceids []string) *FVResponse {
+	var msReq = FVRequest{faceids, persongid}
 
 	postData, err := json.Marshal(msReq)
 	if err != nil {
@@ -202,16 +203,12 @@ func getFaceVerification(url string) *FVResponse {
 	return &response
 }
 
-type NPGRequest struct {
-	Name string
-	userData string
-}
 
 func createPersonGroup(name string, info string) bool {
 	var endpoint = fvendpoint + "/persongroups/" + persongid
 
-	//var msReq = NPGRequest{username, data}
-	var msReq = NPGRequest{name, info}
+	//var msReq = NewPGRequest{username, data}
+	var msReq = NewPGRequest{name, info}
 
 	postData, err := json.Marshal(msReq)
 	if err != nil {
@@ -240,14 +237,6 @@ func createPersonGroup(name string, info string) bool {
 	return true
 }
 
-type PGRequest struct {
-	Username string
-	UserData string
-}
-
-type Person struct {
-	PersonId string
-}
 
 func createPerson(username string, userinfo string) *Person {
 	var endpoint = fvendpoint + "/persongroups/" + persongid + "/persons"
@@ -273,15 +262,6 @@ func createPerson(username string, userinfo string) *Person {
 	var person Person
 	json.NewDecoder(resp.Body).Decode(&person)
 	return &person
-}
-
-
-type NewFaceRequest struct {
-	Url string
-}
-
-type NewFaceResponse struct {
-	PersistedFaceId string
 }
 
 
@@ -335,4 +315,31 @@ func trainPersonGroup() bool {
 		log.Fatal("response was not 200!")
 	}
 	return true
+}
+
+
+func detectFaces(url string) *[]Faces {
+	var endpoint = fvendpoint + "/detect"
+
+	var msReq = NewFaceRequest{url}
+
+	postData, err := json.Marshal(msReq)
+	if err != nil {
+		panic(err)
+	}
+
+	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(postData))
+	req.Header.Set("Ocp-Apim-Subscription-Key", fvkey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	var faces []Faces
+	json.NewDecoder(resp.Body).Decode(&faces)
+	return &faces
 }
