@@ -13,6 +13,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const (
+	key      = "3c9bda420b1f4c7d81ee65210b55fe11"
+	endpoint = "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=categories,description&language=en"
+)
+
 func main() {
 	client := redis.NewClient(&redis.Options{
 		Addr:     "redis:6379",
@@ -77,7 +82,6 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Checking cache")
 }
 
-
 func cvHandler(w http.ResponseWriter, r *http.Request) {
 	url := r.URL.Query().Get("url")
 	response := getDescriptionFromCognitiveServices(url)
@@ -86,10 +90,7 @@ func cvHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(responseJson)
 }
 
-
 func getDescriptionFromCognitiveServices(url string) *CVResponse {
-	var key = "3c9bda420b1f4c7d81ee65210b55fe11"
-	var endpoint = "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=categories,description&language=en"
 	var msReq = CVRequest{url}
 	postData, err := json.Marshal(msReq)
 	if err != nil {
