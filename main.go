@@ -160,31 +160,20 @@ func getDescriptionFromCognitiveServices(url string) (cvr CVResponse, err error)
 
 	postData, err := json.Marshal(msReq)
 	if err != nil {
-		panic(err)
+		return
 	}
 
 	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(postData))
 	req.Header.Set("Ocp-Apim-Subscription-Key", key)
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
+	resp, err := makeAPICallWithBackoff(req)
 
-	var backoffTimeout = 0.5
-	resp, err := client.Do(req)
-	for {
-		if err == nil {
-			break
-		}
-		time.Sleep(time.Duration(backoffTimeout) * time.Second)
-		resp, err = client.Do(req)
-		backoffTimeout *= 2
-		if backoffTimeout == 8 {
-			err = errors.New("API Timeout")
-			return
-		}
+	if err != nil {
+		return
 	}
-	defer resp.Body.Close()
 
+	defer resp.Body.Close()
 	json.NewDecoder(resp.Body).Decode(&cvr)
 
 	return
@@ -240,4 +229,23 @@ func trainGroups(w http.ResponseWriter, r *http.Request) {
 func listUsers(w http.ResponseWriter, r *http.Request) {
 	// each user needs to have its personId
 
+}
+
+func makeAPICallWithBackoff(req *http.Request) (resp *http.Response, err error) {
+	client := &http.Client{}
+
+	var backoffTimeout = 0.5
+	resp, err = client.Do(req)
+	for {
+		if err == nil {
+			return
+		}
+		time.Sleep(time.Duration(backoffTimeout) * time.Second)
+		resp, err = client.Do(req)
+		backoffTimeout *= 2
+		if backoffTimeout == 8 {
+			err = errors.New("API Timeout")
+			return
+		}
+	}
 }
