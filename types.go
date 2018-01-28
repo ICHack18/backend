@@ -38,10 +38,17 @@ type CVDescription struct {
 type CVResponse struct {
 	Categories  []CVCategory  `json:"categories"`
 	Description CVDescription `json:"description"`
+	Metadata    CVMetadata    `json:"metadata"`
 }
 
 type CVRequest struct {
 	Url string `json:"url"`
+}
+
+type CVMetadata struct {
+	Width  int      `json:"width"`
+	Height int      `json:"height"`
+	Format string   `json:"format"`
 }
 
 type FVRequest struct {
