@@ -42,10 +42,18 @@ func main() {
 	r.HandleFunc("/", apiHealthHandler)
 	r.HandleFunc("/hide", redisHandler(client, hideHandler)).Methods("POST")
 	r.HandleFunc("/call-ms-cv/", cvHandler)
+	r.HandleFunc("/newuser", newUser)
+	r.HandleFunc("/adduserphoto", newUserPhoto)
+	r.HandleFunc("/traingroups", trainGroups)
+	r.HandleFunc("/listusers", listUsers)
 
 	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
 
 	log.Fatal(http.ListenAndServe(":2048", loggedRouter))
+}
+
+func ensure_groups_created() {
+	// TODO
 }
 
 func apiHealthHandler(w http.ResponseWriter, r *http.Request) {
@@ -196,5 +204,40 @@ func shouldBlockImage(blockTags []string, cvResponse CVResponse) bool {
 			return true
 		}
 	}
+
+	// NOTE: Where to put this?
+	// TODO: detect faces, get first 10 faceids, and then
+	//faces := detectFaces(photoUrl)
+	//for face := range *faces {
+	//	face.FaceId
+	//}
+	// TODO: then call
+	//getFaceVerification(photoUrl)
 	return false
+}
+
+func newUser(w http.ResponseWriter, r *http.Request) {
+	//username := r.URL.Query().Get("username")
+	//userinfo := r.URL.Query().Get("userinfo")
+	//person := createPerson(username, userinfo)
+	// TODO: something with person ID?
+	// TODO: respond with updated list of users-> redirect to listUsers?
+}
+
+func newUserPhoto(w http.ResponseWriter, r *http.Request) {
+	//personId  := r.URL.Query().Get("personId")
+	//photoUrl := r.URL.Query().Get("url")
+	//newFace := addPersonFace(personId, photoUrl)
+	// TODO: store persistedFaceId somewhere -> list of faces that can occur in a photo-> max 10 cos demo
+}
+
+func trainGroups(w http.ResponseWriter, r *http.Request) {
+	// TODO: loop over all keys and retrain group for each
+	//trainPersonGroup()
+	// TODO: some spinner or something to mark busy? idk
+}
+
+func listUsers(w http.ResponseWriter, r *http.Request) {
+	// each user needs to have its personId
+
 }
