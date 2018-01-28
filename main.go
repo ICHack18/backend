@@ -170,7 +170,7 @@ func getDescriptionFromCognitiveServices(url string) (cvr CVResponse, err error)
 // TODO: add face rec to this
 func shouldBlockImage(blockTags []string, cvResponse CVResponse) bool {
 	// If image is too small then the width or height is set to 0 but shouldn't be hidden
-	if cvResponse.Metadata.Width == 0 || cvResponse.Metadata.Height == 0 {
+	if cvResponse.Metadata.Width == 0 || cvResponse.Metadata.Height == 0 || len(blockTags) == 0 {
 		return false
 	}
 
