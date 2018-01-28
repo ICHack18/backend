@@ -6,9 +6,10 @@ type HealthResponse struct {
 }
 
 type ImageResponse struct {
-	Url             string `json:"url"`
-	Hide            bool   `json:"hide"`
-	SubstituteImage string `json:"substituteImage"`
+	Url             string   `json:"url"`
+	Hide            bool     `json:"hide"`
+	SubstituteImage string   `json:"substituteImage"`
+	Tags            []CVTags `json:"tags"`
 }
 
 type Response struct {
@@ -16,9 +17,9 @@ type Response struct {
 }
 
 type Request struct {
-	UseCache bool  `json:"useCache"`
-	Tags  []string `json:"tags"`
-	Urls  []string `json:"urls"`
+	UseCache bool     `json:"useCache"`
+	Tags     []string `json:"tags"`
+	Urls     []string `json:"urls"`
 }
 
 type CVCategory struct {
@@ -39,6 +40,12 @@ type CVResponse struct {
 	Categories  []CVCategory  `json:"categories"`
 	Description CVDescription `json:"description"`
 	Metadata    CVMetadata    `json:"metadata"`
+	Tags        []CVTags      `json:"tags"`
+}
+
+type CVTags struct {
+	Name       string  `json:"name"`
+	Confidence float64 `json:"confidence"`
 }
 
 type CVRequest struct {
@@ -46,23 +53,23 @@ type CVRequest struct {
 }
 
 type CVMetadata struct {
-	Width  int      `json:"width"`
-	Height int      `json:"height"`
-	Format string   `json:"format"`
+	Width  int    `json:"width"`
+	Height int    `json:"height"`
+	Format string `json:"format"`
 }
 
 type FVRequest struct {
-	FaceIds []string
+	FaceIds       []string
 	PersonGroupId string
 }
 
 type Candidates struct {
-	PersonId string
+	PersonId   string
 	Confidence float64
 }
 
 type FacesId struct {
-	FaceId string
+	FaceId     string
 	Candidates []Candidates
 }
 
@@ -71,7 +78,7 @@ type FVResponse struct {
 }
 
 type NewPGRequest struct {
-	Name string
+	Name     string
 	userData string
 }
 
@@ -93,13 +100,13 @@ type NewFaceResponse struct {
 }
 
 type FaceRect struct {
-	Width int
+	Width  int
 	Height int
-	Left int
-	Top int
+	Left   int
+	Top    int
 }
 
 type Faces struct {
-	FaceId string
+	FaceId   string
 	FaceRect FaceRect
 }

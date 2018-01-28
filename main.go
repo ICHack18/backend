@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	endpoint   = "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=categories,description&language=en"
+	endpoint   = "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=categories,description,tags&language=en"
 	fvendpoint = "https://westcentralus.api.cognitive.microsoft.com/face/v1.0"
 	persongid  = "banned_users"
 )
@@ -126,6 +126,7 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 			Url:             url,
 			Hide:            shouldBlockImage(req.Tags, cvResponse),
 			SubstituteImage: url,
+			Tags:            cvResponse.Tags,
 		}
 
 		response.Images[index] = imageResponse
