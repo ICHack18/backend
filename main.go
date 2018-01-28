@@ -99,6 +99,7 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 		var fetchNew = true
 
 		if req.UseCache {
+			fmt.Println("Using cache")
 			val, err := client.Get(url).Result()
 			if err == nil {
 				fetchNew = false
@@ -111,6 +112,7 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 		}
 
 		if fetchNew {
+			fmt.Println("Fetching new")
 			cvResponse, err = getDescriptionFromCognitiveServices(url)
 			if err != nil {
 				http.Error(w, err.Error(), 429)
