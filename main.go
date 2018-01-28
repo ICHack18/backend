@@ -184,6 +184,8 @@ func shouldBlockImage(blockTags []string, cvResponse CVResponse) bool {
 	set := make(map[string]bool)
 	for _, imageTag := range imageTags {
 		set[strings.ToLower(imageTag)] = true
+		set[strings.ToLower(imageTag) + "s"] = true
+		set[strings.ToLower(imageTag) + "es"] = true
 	}
 
 	for _, blockTag := range blockTags {
