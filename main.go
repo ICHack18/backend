@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	endpoint   = "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=categories,description,tags&language=en"
+	endpoint   = "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=categories,description&details=Celebrities&language=en"
 	fvendpoint = "https://westcentralus.api.cognitive.microsoft.com/face/v1.0"
 	persongid  = "banned_users"
 )
@@ -175,6 +175,12 @@ func shouldBlockImage(blockTags []string, cvResponse CVResponse) bool {
 	}
 
 	imageTags := cvResponse.Description.Tags
+	for _, detail := range cvResponse.Categories {
+		for _, celeb := range detail.Detail.Celebrities {
+			imageTags = append(imageTags, strings.Split(celeb.Name, " ")...)
+		}
+	}
+
 	set := make(map[string]bool)
 	for _, imageTag := range imageTags {
 		set[strings.ToLower(imageTag)] = true

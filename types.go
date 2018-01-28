@@ -25,6 +25,16 @@ type Request struct {
 type CVCategory struct {
 	Name  string  `json:"name"`
 	Score float64 `json:"score"`
+	Detail CVDetail `json:"detail"`
+}
+
+type CVDetail struct {
+	Celebrities []Celebrity `json:"celebrities"`
+}
+
+type Celebrity struct {
+	Name string `json:"name"`
+	Confidence float64 `json:"confidence"`
 }
 
 type CVCaption struct {
