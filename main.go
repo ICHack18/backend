@@ -18,13 +18,13 @@ import (
 )
 
 const (
-	endpoint = "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=categories,description&language=en"
+	endpoint   = "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=categories,description&language=en"
 	fvendpoint = "https://westcentralus.api.cognitive.microsoft.com/face/v1.0"
-	persongid = "banned_users"
+	persongid  = "banned_users"
 )
+
 var key = os.Getenv("VISION_KEY")
 var fvkey = os.Getenv("FACE_VISION_KEY")
-
 
 func main() {
 	client := redis.NewClient(&redis.Options{
@@ -41,7 +41,6 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", apiHealthHandler)
 	r.HandleFunc("/hide", redisHandler(client, hideHandler)).Methods("POST")
-	r.HandleFunc("/call-ms-cv/", cvHandler)
 	r.HandleFunc("/newuser", newUser)
 	r.HandleFunc("/adduserphoto", newUserPhoto)
 	r.HandleFunc("/traingroups", trainGroups)
@@ -138,18 +137,6 @@ func hideHandler(client *redis.Client, w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("content-type", "application/json")
-	w.Write(responseJson)
-}
-
-func cvHandler(w http.ResponseWriter, r *http.Request) {
-	url := r.URL.Query().Get("url")
-	response, err := getDescriptionFromCognitiveServices(url)
-	if err != nil {
-		http.Error(w, err.Error(), 429)
-		return
-	}
-	responseJson, _ := json.Marshal(response)
-	w.Header().Set("Content-Type", "application/json")
 	w.Write(responseJson)
 }
 

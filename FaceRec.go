@@ -1,11 +1,11 @@
 package main
 
 import (
-	"encoding/json"
-	"net/http"
 	"bytes"
+	"encoding/json"
 	"io/ioutil"
 	"log"
+	"net/http"
 )
 
 func getFaceVerification(url string, faceids []string) (*FVResponse, error) {
@@ -32,7 +32,6 @@ func getFaceVerification(url string, faceids []string) (*FVResponse, error) {
 	json.NewDecoder(resp.Body).Decode(&response)
 	return &response, nil
 }
-
 
 func createPersonGroup(name string, info string) (bool, error) {
 	var endpoint = fvendpoint + "/persongroups/" + persongid
@@ -68,7 +67,6 @@ func createPersonGroup(name string, info string) (bool, error) {
 	return true, nil
 }
 
-
 func createPerson(username string, userinfo string) (*Person, error) {
 	var endpoint = fvendpoint + "/persongroups/" + persongid + "/persons"
 
@@ -95,7 +93,6 @@ func createPerson(username string, userinfo string) (*Person, error) {
 	json.NewDecoder(resp.Body).Decode(&person)
 	return &person, nil
 }
-
 
 func addPersonFace(personid string, url string) (*NewFaceResponse, error) {
 	var endpoint = fvendpoint + "/persongroups/" + persongid + "/persons/" + personid + "/persistedFaces"
@@ -124,7 +121,6 @@ func addPersonFace(personid string, url string) (*NewFaceResponse, error) {
 	return &face, nil
 }
 
-
 func trainPersonGroup() (bool, error) {
 	var endpoint = fvendpoint + "/persongroups/" + persongid + "/train"
 
@@ -150,7 +146,6 @@ func trainPersonGroup() (bool, error) {
 	}
 	return true, nil
 }
-
 
 func detectFaces(url string) (*[]Faces, error) {
 	var endpoint = fvendpoint + "/detect"
